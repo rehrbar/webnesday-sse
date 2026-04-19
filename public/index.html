@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo | Webnesday SSE</title>
+</head>
+<body>
+    
+<h1>Server Sent Events Demo</h1>
+<pre id="target"></pre>
+<script>
+    // TODO create a beatiful ui
+    const t = document.getElementById('target');
+    const events = new EventSource('http://localhost:3000/events');
+    events.onmessage = (event) => {
+        console.log("Message received:", event);
+        t.innerText = event.data;
+    }
+    //events.addEventListener("clients", (event) => console.log("clients connected", event.data));
+</script>
+</body>
+</html>
