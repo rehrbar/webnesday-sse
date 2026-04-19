@@ -4,20 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demo | Webnesday SSE</title>
+    <link rel="stylesheet" href="main.css">
 </head>
-<body>
+<body class="demo">
     
-<h1>Server Sent Events Demo</h1>
-<pre id="target"></pre>
+<h1>Rate the Talk</h1>
+<ul>
+    <li class="vote-button" data-value="5"><div class="stars">⭐⭐⭐⭐⭐</div><div class="result"></div></li>
+    <li class="vote-button" data-value="4"><div class="stars">⭐⭐⭐⭐</div><span class="result"></span></li>
+    <li class="vote-button" data-value="3"><div class="stars">⭐⭐⭐</div><span class="result"></span></li>
+    <li class="vote-button" data-value="2"><div class="stars">⭐⭐</div><span class="result"></span></li>
+    <li class="vote-button" data-value="1"><div class="stars">⭐</div><span class="result"></span></li>
+</ul>
+<pre id="debug"></pre>
 <script>
-    // TODO create a beatiful ui
-    const t = document.getElementById('target');
-    const events = new EventSource('http://localhost:3000/events');
-    events.onmessage = (event) => {
-        console.log("Message received:", event);
-        t.innerText = event.data;
+    const t = document.getElementById('debug');
+    function writeDebug(message) {
+        t.innerText += `\n${message}`;
     }
-    //events.addEventListener("clients", (event) => console.log("clients connected", event.data));
+    const events = new EventSource('http://localhost:3000/events');
+    events.addEventListener("message", (event) => {
+        writeDebug(event.data);
+    })
+    events.addEventListener("clients", (event) => console.log("clients connected", event.data));
+    events.addEventListener("votes", (event) => console.log("votes", event.data));
+
+    const voteButtons = document.querySelectorAll(".vote-button");
+    voteButtons.forEach(button => button.addEventListener("click", (event) => {
+        const vote = Number.parseInt(button.dataset['value']);
+        writeDebug(`Submitting vote: ${vote}`);
+        fetch('/votes',{method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({vote})});
+    }))
 </script>
 </body>
 </html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage | Webnesday SSE</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <h1>Manage Server</h1>
+
+    <button id="reset">Reset Server</button>
+
+<script>
+const resetButton = document.getElementById('reset');
+resetButton.addEventListener('click', () => {
+    fetch('/votes', {method: "DELETE"});
+});
+</script>
+</body>
+</html>
