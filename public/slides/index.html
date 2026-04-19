@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Slides SSE | Webnesday</title>
+    <meta charset="utf-8">
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+        @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+        @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+        body {
+            font-family: 'Droid Serif';
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Yanone Kaffeesatz';
+            font-weight: normal;
+        }
+
+        .remark-code {
+            display: block;
+            padding: .5em;
+            overflow-x: auto;
+        }
+
+        .remark-code,
+        .remark-inline-code {
+            font-family: 'Ubuntu Mono';
+            border: 1px dashed #777;
+            background-color: #202020;
+            color: #00ff33;
+        }
+
+        .remark-slide-content {
+            background-color: black;
+            color: white;
+        }
+
+        .remark-slide-content a,
+        .remark-slide-content a:visited {
+            color: #00ff33;
+        }
+
+        .remark-slide-content h1,
+        .remark-slide-content h2,
+        .remark-slide-content h3 {
+            color: #00ff33;
+        }
+
+        .remark-slide-content li {
+            margin-bottom: 0.4em;
+        }
+
+        .remark-slide-content li>ul {
+            margin-top: 0.4em;
+        }
+
+        /* Two-column layout */
+        .left-column {
+            color: #777;
+            width: 20%;
+            height: 92%;
+            float: left;
+        }
+
+        .left-column h2:last-of-type,
+        .left-column h3:last-child {
+            color: #000;
+        }
+
+        .right-column {
+            width: 75%;
+            float: right;
+            padding-top: 1em;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1em;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <textarea id="source">
+
+class: center, middle
+
+# Server Sent Events (SSE)
+
+Webnesday 2026
+
+Roman Ehrbar
+
+---
+
+# Agenda
+
+- Motivation
+- Demo
+- Comparison to WebSockets and Long-Polling
+- Debugging SSE
+- Pitfalls
+- Scaling SSE
+- Usages of SSE
+
+---
+
+# Motivation
+
+- Learn something new
+- Share and discuss ideas
+- Simple "fist-of-five" app for sprint events
+
+???
+
+Learn a new technology.
+Learn about myself and how do I appear on stage.
+
+Webnesday is a great place to share and discuss ideas. Is it really worth it or are there any blind spots.
+- Quick feedback.
+- Time limit and goal for focussed work.
+
+"fist-of-five":
+- Unreliable over the webcam or chat.
+- Filters **blur hands** (background) or image is bad lit.
+- Moderator is **biased** to see only good results.
+- Calculating **average** is hard on the spot.
+
+---
+
+# Server
+
+- Express based for simplicity.
+- Using _bun_ runtime.
+- Serves static files and API.
+- Keeps connection open for each client.
+- Accepts votes from clients.
+- Sends updates to each client.
+
+---
+
+# Server
+
+- Headers signal client to keep the connection alive.
+- `response` will never be closed.
+
+```typescript
+app.get('/events', (request: express.Request, response: express.Response) => {
+  const headers = {
+    'Content-Type': 'text/event-stream',
+    'Connection': 'keep-alive',
+    'Cache-Control': 'no-cache'
+  };
+  response.writeHead(200, headers);
+  // ...
+}
+```
+
+---
+
+# Server
+
+- Store each connected client.
+- Remove disconnected clients.
+
+```typescript
+  // ...
+  const clientId = self.crypto.randomUUID();
+
+  const newClient = {
+    id: clientId,
+    response
+  };
+
+  clients.push(newClient);
+  // Handle client disconnecting and remove them from the list receiving updates.
+  request.on('close', () => {
+    console.log(`${clientId} Connection closed`);
+    clients = clients.filter(client => client.id !== clientId);
+    sendClientCountToAll();
+  });
+  // ...
+```
+
+---
+
+# Server
+
+- Sending event to all connected clients.
+  - `event`: Identifier for the type (optional).
+  - `data`: The data field for the message.
+- Double new lines `\n\n` are required to distinguish events.
+  - Otherwise concatenated.
+- Data needs to be serialized (e.g. `JSON.stringify()`).
+
+```typescript
+function sendClientCountToAll() {
+    clients.forEach(client => client.response.write(
+        `event: clients\ndata: ${clients.length}\n\n`
+    ));
+}
+```
+
+---
+
+# Summary
+
+---
+
+# Resources
+
+- https://developer.mozilla.org/en-US/docs/Web/API/EventSource
+- https://html.spec.whatwg.org/multipage/server-sent-events.html
+- https://blog.openreplay.com/websockets-sse-long-polling/
+- https://rxdb.info/articles/websockets-sse-polling-webrtc-webtransport.html
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+        var slideshow = remark.create({
+            highlightStyle: "monokai"
+        });
+    </script>
+</body>
+
+</html>
