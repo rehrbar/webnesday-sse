@@ -107,7 +107,7 @@ Roman Ehrbar
 # Agenda
 
 - Motivation
-- Demo
+- Basics
 - Comparison to WebSockets and Long-Polling
 - Debugging SSE
 - Pitfalls
@@ -211,6 +211,59 @@ function sendClientCountToAll() {
     ));
 }
 ```
+
+---
+
+# Client
+
+- Subscribes to events from the server at `/events`.
+- Handle the events as you like.
+- Deserialize data if required.
+
+```javascript
+const events = new EventSource('/events');
+events.addEventListener("message", (event) => {
+    // Handle event without type.
+})
+events.addEventListener("votes", (event) => {
+    // Handle event: votes
+})
+```
+
+---
+
+# Demo
+
+<img src="server-instance-qr.png" alt="Server Instance QR Code" />
+
+<iframe width="400" style="position: absolute; top: 0; right: 0; height: 100vh" src="https://webnesday-sse-166601820595.europe-west1.run.app/" frameborder="0">
+
+???
+
+Reset server: <a href="/manage.html">/manage.html</a>
+
+---
+
+# Debugging
+
+- Browser Developer-Tools - Network Monitor
+  - Request might be marked as completed.
+  - Enable _Event Name_ column.
+- Errors might be visible in the console (e.g. interruptions).
+- If _event type_ is not specified, events might not be visible.
+
+<img src="debug-browser.png" alt="Debugging in Firefox" />
+
+---
+
+# Debugging
+
+- Man-in-the-Middle proxy
+  - Might close the connection.
+  - Output is garbled.
+  - Required for debugging non-browser clients.
+- `curl`
+  - Raw text output.
 
 ---
 

@@ -44,10 +44,13 @@
     const events = new EventSource('/events');
     events.addEventListener("message", (event) => {
         writeDebug(event.data);
-    })
+    });
+    events.addEventListener("error", (event) => {
+        writeDebug("EventSource error");
+    });
     events.addEventListener("clients", (event) => console.log("clients connected", event.data));
     events.addEventListener("votes", (event) => {
-        console.log("votes", event.data);
+        writeDebug(`received votes: ${event.data}`);
         renderVotes(JSON.parse(event.data));
     });
 
