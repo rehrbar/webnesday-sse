@@ -22,8 +22,8 @@ function sendClientCountToAll() {
 }
 
 function sendVotesToAll() {
-  // TODO fix serialization of map.
-    clients.forEach(client => client.response.write(`event: votes\ndata: ${JSON.stringify(votes)}\n\n`))
+    const serializedVotes = Object.fromEntries(votes);
+    clients.forEach(client => client.response.write(`event: votes\ndata: ${JSON.stringify({ votes: serializedVotes })}\n\n`));
 }
 
 // Endpoint for clients to subscribe for updates.

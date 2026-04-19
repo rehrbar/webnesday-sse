@@ -23,13 +23,33 @@
         t.innerText += `\n${message}`;
     }
     const events = new EventSource('http://localhost:3000/events');
+    const voteButtons = document.querySelectorAll(".vote-button");
+
+    function renderVotes(payload) {
+        const totalVotes = Object.values(payload.votes ?? {}).reduce((sum, entry) => sum + (entry.votes ?? 0), 0);
+
+        voteButtons.forEach(button => {
+            const voteValue = button.dataset['value'];
+            const resultElement = button.querySelector('.result');
+            const count = payload.votes?.[voteValue]?.votes ?? 0;
+            const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+
+            resultElement.textContent = count > 0 ? `(${count}, ${percentage}%)` : '';
+            button.style.backgroundImage = percentage > 0
+                ? `linear-gradient(90deg, rgba(255, 72, 72, 0.45) ${percentage}%, transparent ${percentage}%)`
+                : '';
+        });
+    }
+
     events.addEventListener("message", (event) => {
         writeDebug(event.data);
     })
     events.addEventListener("clients", (event) => console.log("clients connected", event.data));
-    events.addEventListener("votes", (event) => console.log("votes", event.data));
+    events.addEventListener("votes", (event) => {
+        console.log("votes", event.data);
+        renderVotes(JSON.parse(event.data));
+    });
 
-    const voteButtons = document.querySelectorAll(".vote-button");
     voteButtons.forEach(button => button.addEventListener("click", (event) => {
         const vote = Number.parseInt(button.dataset['value']);
         writeDebug(`Submitting vote: ${vote}`);
