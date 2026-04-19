@@ -23,7 +23,6 @@
     function writeDebug(message) {
         t.innerText += `\n${message}`;
     }
-    const events = new EventSource('http://localhost:3000/events');
     const voteButtons = document.querySelectorAll(".vote-button");
 
     function renderVotes(payload) {
@@ -42,6 +41,7 @@
         });
     }
 
+    const events = new EventSource('/events');
     events.addEventListener("message", (event) => {
         writeDebug(event.data);
     })
