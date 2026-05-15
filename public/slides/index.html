@@ -341,6 +341,26 @@ Reset server: <a href="/manage.html">/manage.html</a>
 
 ---
 
+# Scaling out
+
+- Handle thousands of connections.
+- Update needs to reach the correct client.
+- Options:
+  - Store messages centrally (pub/sub)
+  - Balance related clients to same node
+  - Use dedicated SSE service
+
+???
+
+- Port-limitation is 64k, memory is probably exhausted earlier.
+- Failover loses all server memory.
+- Messages are stored centrally, e.g. redis cache
+  - Each server needs to see if there is an interested client.
+- Balancing on query parameters or location, e.g. a poker room
+- Dedicated SSE services exist and might offload some complexity.
+
+---
+
 # Usages
 
 - Used in AI Agents and chats to stream each token.
