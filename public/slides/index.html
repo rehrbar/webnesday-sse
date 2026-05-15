@@ -242,6 +242,42 @@ events.addEventListener("votes", (event) => {
 
 Reset server: <a href="/manage.html">/manage.html</a>
 
+
+---
+
+# Comparison to Websockets
+
+- Bidirectional
+- Upgrade vom HTTP
+- No connection limits (up from 6)
+- Binary
+- Manual reconnection
+- Adds complexity
+- Acceptable Proxy Support
+
+???
+
+- SSE is unidirectional, server to client.
+- But just use fetch to send to the server.
+- On top of HTTP (all newer versions)
+- Text only (encode binary as Base64)
+- Simple setup
+- Most proxies can handle SSE without issues, WS less so.
+
+---
+
+# Comparison to Long-Polling
+
+- Works in legacy systems (Server keeps connection open)
+- High overhead
+- Manual reconnection
+
+???
+
+- Call server as soon as previous request has finished.
+- Server keeps connection until some data is available or a timeout occurs.
+- Server and client retry connections often.
+
 ---
 
 # Debugging
@@ -250,7 +286,6 @@ Reset server: <a href="/manage.html">/manage.html</a>
   - Request might be marked as completed.
   - Enable _Event Name_ column.
 - Errors might be visible in the console (e.g. interruptions).
-- If _event type_ is not specified, events might not be visible.
 
 <img src="debug-browser.png" alt="Debugging in Firefox" />
 
@@ -264,6 +299,52 @@ Reset server: <a href="/manage.html">/manage.html</a>
   - Required for debugging non-browser clients.
 - `curl`
   - Raw text output.
+- _Bruno_ and _Postman_ support it.
+
+---
+
+# Pitfalls
+
+- Only 6 connections per domain on HTTP/1.1
+- Delayed detection of closed connections up to 15 min.
+  - Use sensible timeout and keep-alive messages
+- Firewalls/Proxies terminate connections prematurely
+  - Use keep-alive messages
+- Battery powered devices might limit networking.
+
+???
+
+- Connection limit is same as for other resources. HTTP/2 has by default 100, can be negotiated.
+- Delayed detection is due to roundtrip-timeouts and tcp resubmissions.
+- Some Firewalls/Proxies terminate every connection after a specified time or inactivity. Keep-alive messages might help.
+
+---
+
+# Pitfalls 2
+
+- If _event type_ is not specified, events might not be visible.
+  - `.onMessage()` only sees unspecified ones
+  - same for `.addEventListener('message')`
+  - no wildcard available
+- Lost messages
+  - Use `id` in message, which is reflected in `Last-Event-ID` header on reconnects.
+  - Replay all messages between the ID and the most recent.
+- Only cookie based authentication
+  - Headers cannot be modified
+
+???
+
+- _event type_ is optional. When using a specific one, the event handler also needs to be configured.
+- To replay messages, they need to be stored. Client might process lots of outdated messages.
+---
+
+# Usages
+
+- Used in AI Agents and chats to stream each token.
+- MCP transport for remote server (aka _Streamable HTTP_).
+- Dashboards with realtime updates.
+- Stream server logs.
+- Progress updates on long running tasks.
 
 ---
 
