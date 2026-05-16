@@ -21,7 +21,7 @@
 <script>
     const t = document.getElementById('debug');
     function writeDebug(message) {
-        t.innerText += `\n${message}`;
+        t.innerText = `${message}\n${t.innerText}`;
     }
     const voteButtons = document.querySelectorAll(".vote-button");
 

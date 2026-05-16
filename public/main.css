@@ -64,3 +64,8 @@ html {
 .demo li .stars {
     flex-grow: 1
 }
+
+#debug {
+    width: 100%;
+    overflow-y: scroll;
+}
