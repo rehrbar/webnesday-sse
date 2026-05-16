@@ -124,6 +124,8 @@ Roman Ehrbar
 
 ???
 
+There were 3 main factors that motivated me to do this talk:
+
 Learn a new technology.
 Learn about myself and how do I appear on stage.
 
@@ -152,6 +154,7 @@ Webnesday is a great place to share and discuss ideas. Is it really worth it or 
 
 # Server
 
+- Register route handler for `/events`.
 - Headers signal client to keep the connection alive.
 - `response` will never be closed.
 
@@ -166,6 +169,10 @@ app.get('/events', (request: express.Request, response: express.Response) => {
   // ...
 }
 ```
+
+???
+
+- More code on the following slides.
 
 ---
 
@@ -193,6 +200,11 @@ app.get('/events', (request: express.Request, response: express.Response) => {
   // ...
 ```
 
+???
+
+- Save the response object to send updates to the client.
+- Listen to the `close` event on the request to detect disconnections.
+
 ---
 
 # Server
@@ -212,6 +224,11 @@ function sendClientCountToAll() {
 }
 ```
 
+???
+
+- Call this function when the data was updated, e.g. in another route handler.
+- The unclosed `response` object will be used, which was stored earlier.
+
 ---
 
 # Client
@@ -224,10 +241,12 @@ function sendClientCountToAll() {
 const events = new EventSource('/events');
 events.addEventListener("message", (event) => {
     // Handle event without type.
-})
+});
 events.addEventListener("votes", (event) => {
     // Handle event: votes
-})
+    writeDebug(`received votes: ${event.data}`);
+    renderVotes(JSON.parse(event.data));
+});
 ```
 
 ---
@@ -257,12 +276,14 @@ Reset server: <a href="/manage.html">/manage.html</a>
 
 ???
 
+- SSE are not the only way for real time updates.
 - SSE is unidirectional, server to client.
 - But just use fetch to send to the server.
 - On top of HTTP (all newer versions)
 - Text only (encode binary as Base64)
 - Simple setup
 - Most proxies can handle SSE without issues, WS less so.
+- SSE is baseline since 2020, but available since 2011.
 
 ---
 
@@ -289,6 +310,10 @@ Reset server: <a href="/manage.html">/manage.html</a>
 
 <img src="debug-browser.png" alt="Debugging in Firefox" />
 
+???
+
+- New messages are added to the existing request, which might be marked as completed.
+
 ---
 
 # Debugging 2
@@ -306,11 +331,16 @@ Reset server: <a href="/manage.html">/manage.html</a>
   - Required for debugging non-browser clients.
 - _Bruno_ and _Postman_ support it.
 
+???
+
+- Proxies will have an influence over the connection. Check your settings and documentation.
+
 ---
 
 # Pitfalls
 
 - Only 6 connections per domain on HTTP/1.1
+- 100 or more on HTTP/2 (negotiable)
 - Delayed detection of closed connections up to 15 min.
   - Use sensible timeout and keep-alive messages
 - Firewalls/Proxies terminate connections prematurely
@@ -319,8 +349,10 @@ Reset server: <a href="/manage.html">/manage.html</a>
 
 ???
 
-- Connection limit is same as for other resources. HTTP/2 has by default 100, can be negotiated.
-- Delayed detection is due to roundtrip-timeouts and tcp resubmissions.
+Pitfall roughly translates to **Fallstrick/Falle** in German.
+
+- Connection limit is same as for other resources.
+- Delayed detection is due to **roundtrip-timeouts** and **tcp resubmissions**.
 - Some Firewalls/Proxies terminate every connection after a specified time or inactivity. Keep-alive messages might help.
 
 ---
@@ -343,13 +375,17 @@ Reset server: <a href="/manage.html">/manage.html</a>
 - _event type_ is optional. When using a specific one, the event handler also needs to be configured.
 - To replay messages, they need to be stored. Client might process lots of outdated messages.
 - E.g. bun abstracts away some simple methods to broadcast to all clients.
+  - Higher learning curve and additional concepts to master.
 
 ---
 
 # Scaling out
 
 - Handle thousands of connections.
-- Update needs to reach the correct client.
+- Multiple server instances for load balancing and failover.
+- Clients will be connected to different instances.
+- Update needs to be routed to the correct client.
+- Filter messages to clients that are interested in them.
 - Options:
   - Store messages centrally (pub/sub)
   - Balance related clients to same node
@@ -357,8 +393,10 @@ Reset server: <a href="/manage.html">/manage.html</a>
 
 ???
 
-- Port-limitation is 64k, memory is probably exhausted earlier.
+- Ideally, you want to show your project to the public.
+- Keeping track of clients will eat up memory and CPU on the server.
 - Failover loses all server memory.
+- Not every client needs to see every message: save resources.
 - Messages are stored centrally, e.g. redis cache
   - Each server needs to see if there is an interested client.
 - Balancing on query parameters or location, e.g. a poker room
@@ -370,6 +408,7 @@ Reset server: <a href="/manage.html">/manage.html</a>
 
 - Used in AI Agents and chats to stream each token.
 - MCP transport for remote server (aka _Streamable HTTP_).
+- News feeds and sport scores.
 - Dashboards with realtime updates.
 - Stream server logs.
 - Progress updates on long running tasks.
@@ -382,21 +421,7 @@ Reset server: <a href="/manage.html">/manage.html</a>
 - Automatic reconnection
 - Slow adoption of an old standard
 - Prototype feels snappy, ideas for improvements
-
----
-
-# Outlook Webnesday
-
-- Your latest project you want to talk about?
-- You want to learn something new?
-  - How to triage vulnerability reports
-  - Anchored Container Queries in CSS
-  - Local AI in Browsers
-  - How to shrink your webserver
-  - Impact of AI Agents on our websites
-  - My AI aced task XYZ
-  - Ship it and find out
-- You are an expert or passionate about something
+- Time limit for focussed learning did help
 
 ???
 
@@ -412,6 +437,9 @@ Reset server: <a href="/manage.html">/manage.html</a>
 - https://blog.openreplay.com/websockets-sse-long-polling/
 - https://rxdb.info/articles/websockets-sse-polling-webrtc-webtransport.html
 
+Slides + Demo: https://github.com/rehrbar/webnesday-sse
+
+<img src="github-repo.png" alt="GitHub Repository QR Code" width="250"/>
 
     </textarea>
     <script src="https://remarkjs.com/downloads/remark-latest.min.js">
