@@ -210,8 +210,9 @@ app.get('/events', (request: express.Request, response: express.Response) => {
 # Server
 
 - Sending event to all connected clients.
-  - `event`: Identifier for the type (optional).
   - `data`: The data field for the message.
+  - `event`: Identifier for the type (optional).
+  - `id`: Identifier of the message (optional).
 - Double new lines `\n\n` are required to distinguish events.
   - Otherwise concatenated.
 - Data needs to be serialized (e.g. `JSON.stringify()`).
@@ -228,6 +229,7 @@ function sendClientCountToAll() {
 
 - Call this function when the data was updated, e.g. in another route handler.
 - The unclosed `response` object will be used, which was stored earlier.
+- Examples will be shown on the _debugging_ slides.
 
 ---
 
@@ -277,6 +279,8 @@ Reset server: <a href="/manage.html">/manage.html</a>
 ???
 
 - SSE are not the only way for real time updates.
+  - Just a brief overview, consult resources if you need to.
+- This slide shows the differences over SSE.
 - SSE is unidirectional, server to client.
 - But just use fetch to send to the server.
 - On top of HTTP (all newer versions)
@@ -340,7 +344,7 @@ Reset server: <a href="/manage.html">/manage.html</a>
 # Pitfalls
 
 - Only 6 connections per domain on HTTP/1.1
-- 100 or more on HTTP/2 (negotiable)
+  - 100 or more on HTTP/2 (negotiable)
 - Delayed detection of closed connections up to 15 min.
   - Use sensible timeout and keep-alive messages
 - Firewalls/Proxies terminate connections prematurely
